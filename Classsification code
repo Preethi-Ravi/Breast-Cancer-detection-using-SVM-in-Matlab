@@ -1,0 +1,392 @@
+Matlab code for finding ROI ,applying ranklet transform , obtaining feature vectors and storing it in excel.
+clc;
+clear all;
+a=imread('C:\Users\preethi\Desktop\study material\project\NORMAL USED\New folder\ColorwashImage00.jpg');
+he=imcrop(a);
+gray_crop=rgb2gray(he);
+[l1,m1]=size(gray_crop);
+subplot(2,2,1),imshow(a),title('thermogram img');
+subplot(2,2,2),imshow(he),title('ROI');
+subplot(2,2,3),imshow(gray_crop),title('grayscale image');
+for j=1:3
+    w=2^j;
+    m=(w*w)/2;
+    n=(w*w)/2;
+    c=im2col(gray_crop,[w w],'sliding');
+    [x y]=size(c);
+    d=sort(c);
+    %ranklet transform
+    if j==1
+        r=zeros(y,4);
+        for i=1:y
+            for k=1:4
+                e(:,:,k)=size(find(d(:,i)==c(k,i)));
+                r(i,k)=(sum(((find(d(:,i)==c(k,i)))'))/e(1,1,k));
+            end
+        end
+        rv=r(:,1)+r(:,3);
+        mw1=rv-(m*(m+1)/2);
+        R2(:,1)=(mw1./((m*n)/2))-1; %vertical
+        rh=r(:,1)+r(:,2);
+        mw2=rh-(m*(m+1)/2);
+        R2(:,2)=(mw2./((m*n)/2))-1 ;%horizontal
+        rd=r(:,1)+r(:,4);
+        mw3=rd-(m*(m+1)/2);
+        R2(:,3)=(mw3./((m*n)/2))-1; %diagonal
+        rim2h=col2im(R2(:,1),[1 1],[l1-1 m1-1],'sliding');
+        rim2v=col2im(R2(:,2),[1 1],[l1-1 m1-1],'sliding');
+        rim2d=col2im(R2(:,3),[1 1],[l1-1 m1-1],'sliding');
+        ri2(:,:,1)=rim2h;
+        ri2(:,:,2)=rim2v;
+        ri2(:,:,3)=rim2d;
+        
+    elseif j==2
+        r=zeros(y,16);
+        for i=1:y
+            for k=1:16
+                e(:,:,k)=size(find(d(:,i)==c(k,i)));
+                r(i,k)=(sum(((find(d(:,i)==c(k,i)))'))/e(1,1,k));
+            end
+        end
+        rv=r(:,1)+r(:,2)+r(:,5)+r(:,6)+r(:,9)+r(:,10)+r(:,13)+r(:,14);
+        mw1=rv-(m*(m+1)/2);
+        R4(:,1)=(mw1./((m*n)/2))-1; %vertical
+        rh=r(:,1)+r(:,2)+r(:,3)+r(:,4)+r(:,5)+r(:,6)+r(:,7)+r(:,8);
+        mw2=rh-(m*(m+1)/2);
+        R4(:,2)=(mw2./((m*n)/2))-1 ;%horizontal
+        rd=r(:,1)+r(:,2)+r(:,5)+r(:,6)+r(:,11)+r(:,12)+r(:,15)+r(:,16);
+        mw3=rd-(m*(m+1)/2);
+        R4(:,3)=(mw3./((m*n)/2))-1; %diagonal
+         rim4h=col2im(R4(:,1),[1 1],[l1-3 m1-3],'sliding');
+         rim4v=col2im(R4(:,2),[1 1],[l1-3 m1-3],'sliding');
+         rim4d=col2im(R4(:,3),[1 1],[l1-3 m1-3],'sliding');
+        ri4(:,:,1)=rim4h;
+        ri4(:,:,2)=rim4v;
+        ri4(:,:,3)=rim4d;
+    else
+        r=zeros(y,64);
+        rv=zeros(y,1);
+        rh=zeros(y,1);
+        rd=zeros(y,1);
+        for i=1:y
+            for k=1:64
+                e(:,:,k)=size(find(d(:,i)==c(k,i)));
+                r(i,k)=(sum(((find(d(:,i)==c(k,i)))'))/e(1,1,k));
+            end
+        end
+        for l=[1:4 9:12 17:20 25:28 33:36 41:44 49:52 57:60]
+            rv=rv+r(:,l);
+        end
+        mw1=rv-(m*(m+1)/2);
+        R8(:,1)=(mw1./((m*n)/2))-1; %vertical
+        for l=1:32;
+            rh=rh+r(:,l);
+        end
+        mw2=rh-(m*(m+1)/2);
+        R8(:,2)=(mw2./((m*n)/2))-1; %horizontal
+        for l=[1:4 9:12 17:20 25:28 37:40 45:48 53:56 61:64]
+            rd=rd+r(:,l);
+        end
+        mw3=rd-(m*(m+1)/2);
+        R8(:,3)=(mw3./((m*n)/2))-1; %diagonal
+         rim8h=col2im(R8(:,1),[1 1],[l1-7 m1-7],'sliding');
+         rim8v=col2im(R8(:,2),[1 1],[l1-7 m1-7],'sliding');
+         rim8d=col2im(R8(:,3),[1 1],[l1-7 m1-7],'sliding');
+        ri8(:,:,1)=rim8h;
+        ri8(:,:,2)=rim8v;
+        ri8(:,:,3)=rim8d;
+    end
+end
+    figure;
+    subplot(3,3,1),imshow(rim2h),title('vertical(R2)');
+    subplot(3,3,2),imshow(rim2v),title('horizontal(R2)');
+    subplot(3,3,3),imshow(rim2d),title('diagonal(R2)');
+    subplot(3,3,4),imshow(rim4h),title('vertical(R4)');
+    subplot(3,3,5),imshow(rim4v),title('horizontal(R4)');
+    subplot(3,3,6),imshow(rim4d),title('diagonal(R4)');
+    subplot(3,3,7),imshow(rim8h),title('vertical(R8)');
+    subplot(3,3,8),imshow(rim8v),title('horizontal(R8)');
+    subplot(3,3,9),imshow(rim8d),title('diagonal(R8)');
+%feature extraction
+% ranklet histogram
+for i=1:3
+ri2(:,:,i)=(ri2(:,:,i)+1)./2;
+[rihist2 lev]=imhist(ri2(:,:,i),21);
+rihist2=rihist2./(sum(rihist2));
+lev=(lev.*2)-1;
+figure;imhist(rihist2);
+% ranklet cooccurance matrix
+% quantization
+quanrim2=(round(ri2(:,:,i).*10))./10;
+%rcm
+qrim2=(quanrim2+1).*10;
+[glcmr2 SI]=graycomatrix(qrim2,'GrayLimits',[],'NumLevels',21,'Offset',[0 1; -1 1; -1 0; -1 -1],'Symmetric',true);
+rcm2=(glcmr2(:,:,1)+glcmr2(:,:,2)+glcmr2(:,:,3)+glcmr2(:,:,4))./4;
+mur2=mean(R2(:,i));
+stdr2=std(R2(:,i));
+for j=1:21
+    mcr2=0;%mean convergence
+    mcr2=mcr2+(1/stdr2)*abs(lev(j)*rihist2(j)-mur2);
+    cvr2=0;%code variance
+    cvr2=cvr2+(((lev(j)-mur2)^2)*rihist2(j));
+end
+mcr2(:,i)=mcr2;
+cvr2(:,i)=cvr2;
+for k=1:21
+    for l=1:21
+        cer2=0;%code entropy
+        cer2=cer2+rcm2(k,l)*(log(rcm2(k,l)));
+        un2=0;%uniformity
+        un2=un2+(rcm2(k,l)^2);
+        fdm2=0;    %firstorder element difference moment
+        fdm2=fdm2+(abs(k-l)*rcm2(k,l));
+        sdm2=0;%secondorder element difference moment
+        sdm2=sdm2+(((k-l)^2)*rcm2(k,l));
+        foidm2=0;%firstorder inverse element difference moment
+        foidm2=foidm2+(1/(1+abs(k-l)))*rcm2(k,l);
+        soidm2=0;%secondorder inverse element difference moment
+        soidm2=soidm2+(1/(1+(k-l)^2))*rcm2(k,l);
+        end
+end
+  %energy distribution
+for k=9:13
+    for l=9:13
+        edrcm12=0;
+        edrcm12=edrcm12+rcm2(k,l);
+    end
+end
+for k=7:15
+    for l=7:15
+        edrcm22=0;
+        edrcm22=edrcm22+(rcm2(k,l)-edrcm12);
+    end
+end
+for k=3:19
+    for l=3:19
+        edrcm32=0;
+        edrcm32=edrcm32+(rcm2(k,l)-edrcm12-edrcm22);
+    end
+end
+cer2(:,i)=cer2;
+un2(:,i)=un2;
+fdm2(:,i)=fdm2;
+sdm2(:,i)=sdm2;
+foidm2(:,i)=foidm2;
+soidm2(:,i)=soidm2;
+edrcm12(:,i)=edrcm12;
+edrcm22(:,i)=edrcm22;
+edrcm32(:,i)=edrcm32;
+tr2(1,:,i)=mcr2(:,i);
+tr2(2,:,i)=cvr2(:,i);
+tr2(3,:,i)=cer2(:,i);
+tr2(4,:,i)=un2(:,i);
+tr2(5,:,i)=fdm2(:,i);
+tr2(6,:,i)=sdm2(:,i);
+tr2(7,:,i)=foidm2(:,i); 
+tr2(8,:,i)=soidm2(:,i);
+tr2(9,:,i)=edrcm12(:,i);
+tr2(10,:,i)=edrcm22(:,i);
+tr2(11,:,i)=edrcm32(:,i);
+end
+disp(tr2);
+ tr2=((tr2(:,:,1)+tr2(:,:,2)+tr2(:,:,3))./3);
+ xlswrite('C:\Users\preethi\Desktop\study material\project\Series1\RCM_feature.xls',tr2,'SHEET1','AM2');
+ for i=1:3
+ri4(:,:,i)=(ri4(:,:,i)+1)./2;
+[rihist4 lev]=imhist(ri4(:,:,i),21);
+rihist4=rihist4./(sum(rihist4));
+lev=(lev.*2)-1;
+figure;imhist(rihist4);
+% ranklet cooccurance matrix
+% quantization
+quanrim4=(round(ri4(:,:,i).*10))./10;
+%rcm
+qrim4=(quanrim4+1).*10;
+[glcmr4 SI]=graycomatrix(qrim2,'GrayLimits',[],'NumLevels',21,'Offset',[0 1; -1 1; -1 0; -1 -1],'Symmetric',true);
+rcm4=(glcmr4(:,:,1)+glcmr4(:,:,2)+glcmr4(:,:,3)+glcmr4(:,:,4))./4;
+mur4=mean(R4(:,i));
+stdr4=std(R4(:,i));
+for j=1:21
+    mcr4=0;%mean convergence
+    mcr4=mcr4+(1/stdr4)*abs(lev(j)*rihist4(j)-mur4);
+    cvr4=0;%code variance
+    cvr4=cvr4+(((lev(j)-mur4)^2)*rihist4(j));
+end
+mcr4(:,i)=mcr4;
+cvr4(:,i)=cvr4;
+for k=1:21
+    for l=1:21
+        cer4=0;%code entropy
+        cer4=cer4+rcm4(k,l)*(log(rcm4(k,l)));
+        un4=0;%uniformity
+        un4=un4+(rcm4(k,l)^2);
+        fdm4=0;    %firstorder element difference moment
+        fdm4=fdm4+(abs(k-l)*rcm4(k,l));
+        sdm4=0;%secondorder element difference moment
+        sdm4=sdm4+(((k-l)^2)*rcm4(k,l));
+        foidm4=0;%firstorder inverse element difference moment
+        foidm4=foidm4+(1/(1+abs(k-l)))*rcm4(k,l);
+        soidm4=0;%secondorder inverse element difference moment
+        soidm4=soidm4+(1/(1+(k-l)^2))*rcm4(k,l);
+        end
+end
+  %energy distribution
+for k=9:13
+    for l=9:13
+        edrcm14=0;
+        edrcm14=edrcm14+rcm4(k,l);
+    end
+end
+for k=7:15
+    for l=7:15
+        edrcm24=0;
+        edrcm24=edrcm24+(rcm4(k,l)-edrcm14);
+    end
+end
+for k=3:19
+    for l=3:19
+        edrcm34=0;
+        edrcm34=edrcm34+(rcm4(k,l)-edrcm14-edrcm24);
+    end
+end
+cer4(:,i)=cer4;
+un4(:,i)=un4;
+fdm4(:,i)=fdm4;
+sdm4(:,i)=sdm4;
+foidm4(:,i)=foidm4;
+soidm4(:,i)=soidm4;
+edrcm14(:,i)=edrcm14;
+edrcm24(:,i)=edrcm24;
+edrcm34(:,i)=edrcm34;
+tr4(1,:,i)=mcr4(:,i);
+tr4(2,:,i)=cvr4(:,i);
+tr4(3,:,i)=cer4(:,i);
+tr4(4,:,i)=un4(:,i);
+tr4(5,:,i)=fdm4(:,i);
+tr4(6,:,i)=sdm4(:,i);
+tr4(7,:,i)=foidm4(:,i); 
+tr4(8,:,i)=soidm4(:,i);
+tr4(9,:,i)=edrcm14(:,i);
+tr4(10,:,i)=edrcm24(:,i);
+tr4(11,:,i)=edrcm34(:,i);
+end
+disp(tr4);
+ tr4=((tr4(:,:,1)+tr4(:,:,2)+tr4(:,:,3))./3);
+ xlswrite('C:\Users\preethi\Desktop\study material\project\Series1\RCM_feature.xls',tr4,'SHEET1','AM13');
+ for i=1:3
+ri8(:,:,i)=(ri8(:,:,i)+1)./2;
+[rihist8 lev]=imhist(ri8(:,:,i),21);
+rihist8=rihist8./(sum(rihist8));
+lev=(lev.*2)-1;
+figure;imhist(rihist8);
+% ranklet cooccurance matrix
+% quantization
+quanrim8=(round(ri8(:,:,i).*10))./10;
+%rcm
+qrim8=(quanrim4+1).*10;
+[glcmr8 SI]=graycomatrix(qrim2,'GrayLimits',[],'NumLevels',21,'Offset',[0 1; -1 1; -1 0; -1 -1],'Symmetric',true);
+rcm8=(glcmr8(:,:,1)+glcmr8(:,:,2)+glcmr8(:,:,3)+glcmr8(:,:,4))./4;
+mur8=mean(R4(:,i));
+stdr8=std(R4(:,i));
+for j=1:21
+    mcr8=0;%mean convergence
+    mcr8=mcr8+(1/stdr8)*abs(lev(j)*rihist8(j)-mur8);
+    cvr8=0;%code variance
+    cvr8=cvr8+(((lev(j)-mur8)^2)*rihist8(j));
+end
+mcr8(:,i)=mcr8;
+cvr8(:,i)=cvr8;
+for k=1:21
+    for l=1:21
+        cer8=0;%code entropy
+        cer8=cer8+rcm8(k,l)*(log(rcm8(k,l)));
+        un8=0;%uniformity
+        un8=un8+(rcm8(k,l)^2);
+        fdm8=0;    %firstorder element difference moment
+        fdm8=fdm8+(abs(k-l)*rcm8(k,l));
+        sdm8=0;%secondorder element difference moment
+        sdm8=sdm8+(((k-l)^2)*rcm8(k,l));
+        foidm8=0;%firstorder inverse element difference moment
+        foidm8=foidm8+(1/(1+abs(k-l)))*rcm8(k,l);
+        soidm8=0;%secondorder inverse element difference moment
+        soidm8=soidm8+(1/(1+(k-l)^2))*rcm8(k,l);
+        end
+end
+  %energy distribution
+for k=9:13
+    for l=9:13
+        edrcm18=0;
+        edrcm18=edrcm18+rcm8(k,l);
+    end
+end
+for k=7:15
+    for l=7:15
+        edrcm28=0;
+        edrcm28=edrcm28+(rcm8(k,l)-edrcm18);
+    end
+end
+for k=3:19
+    for l=3:19
+        edrcm38=0;
+        edrcm38=edrcm38+(rcm8(k,l)-edrcm18-edrcm28);
+    end
+end
+cer8(:,i)=cer8;
+un8(:,i)=un8;
+fdm8(:,i)=fdm8;
+sdm8(:,i)=sdm8;
+foidm8(:,i)=foidm8;
+soidm8(:,i)=soidm8;
+edrcm18(:,i)=edrcm18;
+edrcm28(:,i)=edrcm28;
+edrcm38(:,i)=edrcm38;
+tr8(1,:,i)=mcr8(:,i);
+tr8(2,:,i)=cvr8(:,i);
+tr8(3,:,i)=cer8(:,i);
+tr8(4,:,i)=un8(:,i);
+tr8(5,:,i)=fdm8(:,i);
+tr8(6,:,i)=sdm8(:,i);
+tr8(7,:,i)=foidm8(:,i); 
+tr8(8,:,i)=soidm8(:,i);
+tr8(9,:,i)=edrcm18(:,i);
+tr8(10,:,i)=edrcm28(:,i);
+tr8(11,:,i)=edrcm38(:,i);
+end
+disp(tr8);
+ tr8=((tr8(:,:,1)+tr8(:,:,2)+tr8(:,:,3))./3);
+ xlswrite('C:\Users\preethi\Desktop\study material\project\Series1\RCM_feature.xls',tr8,'SHEET1','AM24');
+
+Matlab code for svm classification
+
+(i)	For 2 feature attributes
+
+clear all;
+close all;
+data1=xlsread('C:\Users\preethi\Desktop\study material\project\Series1\RCM_feature.xls',2,'B2:AN28');
+dat = data1';
+data=[dat(:,1) dat(:,2)];
+groups = (xlsread('C:\Users\preethi\Desktop\study material\project\Series1\RCM_feature.xls',2,'B29:AN29')');
+[train, test] = crossvalind('holdOut',groups);
+cp = classperf(groups);
+svmStruct = svmtrain(data(train,:),groups(train),'showplot',true);
+title(sprintf('Kernel Function: %s',...
+              func2str(svmStruct.KernelFunction)),...
+              'interpreter','none');
+classes = svmclassify(svmStruct,data(test,:),'showplot',true);
+x=[data(test,:) classes];
+classperf(cp,classes,test);
+cp.CorrectRate
+
+(ii)	For 27 feature attributes
+clear all;
+close all;
+data1=xlsread('C:\Users\preethi\Desktop\study material\project\Series1\RCM_feature.xls',2,'B2:AN28');
+data = data1';
+groups = (xlsread('C:\Users\preethi\Desktop\study material\project\Series1\RCM_feature.xls',2,'B29:AN29')');
+[train, test] = crossvalind('holdOut',groups);
+cp = classperf(groups);
+svmStruct = svmtrain(data(train,:),groups(train));
+classes = svmclassify(svmStruct,data(test,:));
+x=[data(test,:) classes];
+classperf(cp,classes,test);
+cp.CorrectRate
